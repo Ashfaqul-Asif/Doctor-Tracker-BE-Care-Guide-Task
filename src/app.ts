@@ -10,6 +10,7 @@ import { logger } from './lib/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { rejectOperatorKeys } from './middleware/rejectOperatorKeys.js';
 import { apiRouter } from './routes.js';
+import { connectToDatabase } from './db/connect.js';
 
 // Vercel's TS runtime resolves helmet v8 (ESM-only) as an uncallable namespace,
 // so `helmet()` fails to type-check even though it runs fine. Pick up the default
@@ -54,6 +55,15 @@ export function createApp(): Express {
   app.use(cookieParser());
   if (!env.isTest) app.use(pinoHttp({ logger }));
   app.use(rejectOperatorKeys);
+
+  // On serverless hosts (Vercel) `server.ts` never runs, so the database connection it
+  // opens at boot is absent and every query would buffer for 10s then time out. Open the
+  // connection lazily on the first request instead. `connectToDatabase` caches its
+  // connection promise, so once connected this resolves immediately; a connection failure
+  // is forwarded to the error handler rather than surfacing as a buffering timeout.
+  app.use((_req, _res, next) => {
+    connectToDatabase().then(() => next()).catch(next);
+  });
 
   app.use('/api/v1', apiRouter);
 
