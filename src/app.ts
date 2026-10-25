@@ -2,6 +2,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import * as helmetModule from 'helmet';
+import type { RequestHandler } from 'express';
 import { pinoHttp } from 'pino-http';
 import { env } from './config/env.js';
 import { ApiError } from './lib/ApiError.js';
@@ -10,10 +11,13 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { rejectOperatorKeys } from './middleware/rejectOperatorKeys.js';
 import { apiRouter } from './routes.js';
 
-// Vercel's @vercel/node TS runtime resolves helmet v8 (ESM-only) as a namespace
-// under CJS semantics, so `helmet()` fails to type-check even though it runs fine.
-// Pick up the default export when it exists, otherwise fall back to the namespace itself.
-const helmet = (helmetModule as unknown as { default?: typeof helmetModule }).default ?? helmetModule;
+// Vercel's TS runtime resolves helmet v8 (ESM-only) as an uncallable namespace,
+// so `helmet()` fails to type-check even though it runs fine. Pick up the default
+// export when it exists, otherwise fall back to the namespace, and cast to a
+// callable so the subsequent `helmet()` call is accepted under both resolutions.
+const helmet = ((helmetModule as unknown as { default?: unknown }).default ?? helmetModule) as (
+  ...args: unknown[]
+) => RequestHandler;
 
 type CorsCallback = (err: Error | null, allow?: boolean) => void;
 
