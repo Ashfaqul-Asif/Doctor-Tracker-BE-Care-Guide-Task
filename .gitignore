@@ -1,0 +1,22 @@
+# The repo root's .gitignore anchors its rules with a leading slash (`/node_modules`,
+# `/coverage`), so they only cover the root directory. This file is what keeps the
+# server package's own build output and dependencies out of the tree.
+
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# testing
+coverage/
+
+# env — secrets. `.env.example` is committed; `.env` never is.
+.env
+.env.*
+!.env.example
+
+# misc
+.DS_Store
+*.tsbuildinfo
+npm-debug.log*

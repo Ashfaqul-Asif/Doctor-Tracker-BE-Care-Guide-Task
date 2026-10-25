@@ -1,0 +1,59 @@
+{
+  "name": "careguide-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Doctor Tracker API — Express 5 + Mongoose + MongoDB Atlas",
+  "type": "module",
+  "engines": {
+    "node": ">=20.10.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "//test:fast": "The suites that need no database — what CI runs without an Atlas secret.",
+    "test:fast": "vitest run tests/unit.test.ts tests/foundation.test.ts",
+    "seed": "tsx src/scripts/seed.ts",
+    "seed:list": "tsx src/scripts/seed.ts --list",
+    "seed:admin": "tsx src/scripts/seed.ts --only=admin",
+    "seed:doctors": "tsx src/scripts/seed.ts --only=doctors",
+    "seed:patients": "tsx src/scripts/seed.ts --only=patients",
+    "explain": "tsx src/scripts/explain.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "mongoose": "^8.24.3",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@faker-js/faker": "^9.3.0",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.11.0",
+    "@types/supertest": "^6.0.2",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^9.39.5",
+    "globals": "^17.11.0",
+    "pino-pretty": "^13.0.0",
+    "supertest": "^7.2.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.10"
+  }
+}
