@@ -12,6 +12,10 @@ const booleanish = z.enum(['true', 'false']).default('false').transform((v) => v
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
+
+  // The base path every API route is mounted under. Driven by env so the prefix is a
+  // deployment decision, not a code change — e.g. API_PREFIX=/api/v1. Must start with "/".
+  API_PREFIX: z.string().startsWith('/').default('/api/v1'),
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
