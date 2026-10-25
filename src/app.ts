@@ -62,3 +62,10 @@ export function createApp(): Express {
 
   return app;
 }
+
+// Vercel's Serverless Functions runtime loads this module and expects its
+// default export to be an `(req, res) => void` handler. An Express app is one,
+// so exporting a singleton here is enough for every request to flow through it.
+// Local development and other hosts keep using `createApp()` from `server.ts`,
+// so this default export is a no-op there.
+export default createApp();
