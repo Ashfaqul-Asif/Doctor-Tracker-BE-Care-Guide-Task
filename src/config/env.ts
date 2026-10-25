@@ -16,6 +16,13 @@ const envSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
 
+  // Pretty-printed logs via `pino-pretty` are a local-dev convenience only. The
+  // transport runs in a worker thread and `pino-pretty` is a devDependency, so it
+  // is neither installed nor functional on serverless/bundled hosts like Vercel.
+  // Opt in explicitly with LOG_PRETTY=true in a local .env; every deployed
+  // environment leaves it unset and emits plain JSON.
+  LOG_PRETTY: booleanish,
+
   MONGODB_URI: z.string().min(1, 'MONGODB_URI is required (MongoDB Atlas SRV string)'),
   MONGODB_DB_NAME: z.string().min(1).default('careguide'),
   // An explicitly blank `MONGODB_URI_TEST=` in .env is a common way to say "not set" —
