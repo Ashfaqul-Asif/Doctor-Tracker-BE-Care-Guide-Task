@@ -13,9 +13,10 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
 
-  // The base path every API route is mounted under. Driven by env so the prefix is a
-  // deployment decision, not a code change — e.g. API_PREFIX=/api/v1. Must start with "/".
-  API_PREFIX: z.string().startsWith('/').default('/api/v1'),
+  // The base path every API route is mounted under — taken entirely from the env file
+  // (e.g. API_PREFIX=/api/v1). No default: it must be set, and must start with "/", so
+  // the prefix is always an explicit deployment decision rather than a value baked in here.
+  API_PREFIX: z.string().min(1, 'API_PREFIX is required (e.g. /api/v1)').startsWith('/'),
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
