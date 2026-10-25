@@ -55,7 +55,7 @@ export function createApp(): Express {
   if (!env.isTest) app.use(pinoHttp({ logger }));
   app.use(rejectOperatorKeys);
 
-  app.use('/api', apiRouter);
+  app.use('/api/v1', apiRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
