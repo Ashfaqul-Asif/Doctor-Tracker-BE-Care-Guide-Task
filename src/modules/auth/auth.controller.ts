@@ -15,11 +15,18 @@ import * as authService from './auth.service.js';
  */
 export const SESSION_COOKIE_NAME = 'careguide_session';
 
-function sessionCookieOptions(expires?: Date): CookieOptions {
+function sessionCookieOptions(req: Request, expires?: Date): CookieOptions {
+  // The frontend and API live on different sites, so the session cookie must be
+  // SameSite=None to be sent on cross-site requests — and browsers only accept None with
+  // Secure, i.e. over HTTPS. Derive this from the actual request (trust proxy is enabled,
+  // so this reflects X-Forwarded-Proto) instead of env vars, so a deployed HTTPS backend
+  // is correct automatically and local HTTP dev still gets a plain Lax cookie. An explicit
+  // COOKIE_SECURE / COOKIE_SAMESITE can still force the values if ever needed.
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
   const options: CookieOptions = {
     httpOnly: true,
-    secure: env.COOKIE_SECURE,
-    sameSite: env.COOKIE_SAMESITE,
+    secure: isHttps || env.COOKIE_SECURE,
+    sameSite: isHttps ? 'none' : env.COOKIE_SAMESITE,
     path: '/',
   };
   if (env.COOKIE_DOMAIN) options.domain = env.COOKIE_DOMAIN;
@@ -32,8 +39,8 @@ export function readSessionCookie(req: Request): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
-function sendSession(res: Response, session: authService.AuthSession): void {
-  res.cookie(SESSION_COOKIE_NAME, session.token, sessionCookieOptions(session.expiresAt));
+function sendSession(req: Request, res: Response, session: authService.AuthSession): void {
+  res.cookie(SESSION_COOKIE_NAME, session.token, sessionCookieOptions(req, session.expiresAt));
   // Only the user goes in the body — the credential itself is in the cookie. The client
   // needs the identity to render; it never needs the token.
   res.json({ user: session.user });
@@ -42,7 +49,7 @@ function sendSession(res: Response, session: authService.AuthSession): void {
 export const loginHandler: RequestHandler = async (req, res) => {
   const { email, password } = validated(req, 'body', loginBodySchema);
   const session = await authService.login(email, password);
-  sendSession(res, session);
+  sendSession(req, res, session);
 };
 
 /**
@@ -59,6 +66,6 @@ export const meHandler: RequestHandler = (req, res) => {
 
 export const logoutHandler: RequestHandler = async (req, res) => {
   await authService.logout(readSessionCookie(req));
-  res.clearCookie(SESSION_COOKIE_NAME, sessionCookieOptions());
+  res.clearCookie(SESSION_COOKIE_NAME, sessionCookieOptions(req));
   res.status(204).send();
 };
